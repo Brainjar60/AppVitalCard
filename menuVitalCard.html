@@ -43,7 +43,7 @@
                 color: #E42217;
             }
 			TD {
-                font-size: 8pt;
+                font-size: 10pt;
             }
 		</style>
 
@@ -303,11 +303,12 @@
 					var tr = $('<tr id=\"tdP_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
+						var cp = '<img id=\"tdP_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
 						if (j==0) {
-						  tr.append('<td id=\"tdP_r' + i + '_c' + j + '\" onclick=\"select(this);\">' + array[count] + '</td>');
+						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
 						  tr.append('<td>' + array[count] + '</td>');
-						}						
+						}
 						count++;
 					}
 				}
@@ -319,8 +320,9 @@
 					var tr = $('<tr id=\"tdA_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
+						var cp = '<img id=\"tdA_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
 						if (j==0) {
-						  tr.append('<td id=\"tdA_r' + i + '_c' + j + '\" onclick=\"select(this);\">' + array[count] + '</td>');
+						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
 						  tr.append('<td>' + array[count] + '</td>');
 						}
@@ -335,8 +337,9 @@
 					var tr = $('<tr id=\"tdT_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
+						var cp = '<img id=\"tdT_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
 						if (j==0) {
-						  tr.append('<td id=\"tdT_r' + i + '_c' + j + '\" onclick=\"select(this);\">' + array[count] + '</td>');
+						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
 						  tr.append('<td>' + array[count] + '</td>');
 						}
