@@ -253,6 +253,12 @@
 					   case  2:
 						   break;	
 					   case  3:
+							document.getElementById(panels[cntx]).style.display = "none"; 
+							document.getElementById(actions[cntx]).style.display = "none"; 
+							document.getElementById(edits[cntx]).innerHTML = editaElemento("") ; 
+							$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+							$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+						    document.getElementById(edits[cntx]).style.display = "block"; 
 						   break;
 					   default:
 						   break;					   						   				   
@@ -264,18 +270,38 @@
 			var count = 0;
 			var totalCells = 4;
 			// -------------------------------------------
-			function select(cella) {
-				if (!cella) return; 
+			function selectRow(cella) {
+				if (!cella) return;
+				//alert(cella); 
+				var contesti = new Array(); 
+				contesti['M'] = 1;contesti['P'] = 2;contesti['A'] = 3;contesti['T'] = 4; 
 				var idx = cella.id.substring(0,cella.id.indexOf('_c'));
-				var rigaOld = document.getElementById(selectedRow); 
+				var idx1 = idx.substring(2,idx.indexOf('_r'));
+				var idx2 = idx.substring(idx.indexOf('_r') + 2);
+				//alert(idx + " - " + idx1+ " - " + idx2); 
+				clickRef(3, contesti[idx1]);
+				return; 
+				/*
+				var rigaOld = null; 
+				try { 
+					rigaOld = document.getElementById(selectedRow); 
+				} catch (errore) {
+				  // nulla .... 
+				}
 				var riga = document.getElementById(idx); 
 				if (!riga) return;
-				if (rigaOld) rigaOld.style = "border: 1px solid #000;" 
+				
+				if (rigaOld) {
+				   document.getElementById(selectedRow).style = "border: 1px solid #000;" 
+				   //alert(cella.id + " - " + idx); 
+				}
 				if (selectedRow!=idx) {
 				  // seleziona la riga ..... 
-				  riga.style = "color: #00f; background-color: #0ff; border: 5px solid #00f;"
+				  document.getElementById(idx).style = "color: #00f; background-color: #0ff; border: 5px solid #00f;"
 				  selectedRow = idx;
+				  //alert(cella.id + " - " + idx); 
 				} 
+				*/
 			}
 			function getSelecter(code, i, j) {
 				return ''; 
@@ -288,7 +314,11 @@
 					var tr = $('<tr id=\"tdM_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
-						var cp = '<img id=\"tdM_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
+						//var cp = '<img id=\"tdM_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
+						var key = 'tdM_r' + i + '_c' + j; 
+						//var cp = '<input type=\"button\" id=\"' + key + '\" value=\"°\" onclick=\'selectRow(\"'+ key + '\" );\' />'
+						var cp = '<input type=\"button\" id=\"' + key + '\" value=\"°\" onclick=\"selectRow(this);\" />'
+						
 						if (j==0) {
 						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
@@ -306,7 +336,7 @@
 					var tr = $('<tr id=\"tdP_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
-						var cp = '<img id=\"tdP_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
+						var cp = '<img id=\"tdP_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"selectRow(this);\" />'
 						if (j==0) {
 						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
@@ -323,7 +353,7 @@
 					var tr = $('<tr id=\"tdA_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
-						var cp = '<img id=\"tdA_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
+						var cp = '<img id=\"tdA_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"selectRow(this);\" />'
 						if (j==0) {
 						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
@@ -340,7 +370,7 @@
 					var tr = $('<tr id=\"tdT_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
-						var cp = '<img id=\"tdT_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
+						var cp = '<img id=\"tdT_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"selectRow(this);\" />'
 						if (j==0) {
 						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
