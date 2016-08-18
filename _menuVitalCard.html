@@ -1,0 +1,312 @@
+<<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="author" content="www.frebsite.nl" />
+		<meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes" />
+
+		<title>VitalCard App - Demo</title>
+
+		<link type="text/css" rel="stylesheet" href="css/menuDemo.css?v=" />
+		<link type="text/css" rel="stylesheet" href="css/jquery.mmenu.all.css?v=" />
+		<link type="text/css" rel="stylesheet" href="css/font-awesome.min.css" />
+		<style type="text/css">
+			.content {
+				padding-top: 0;
+				background-position: 35px 55px;
+			}
+			#intro,
+			#first,
+			#second,
+			#fourth,
+			#fifth,
+			#third {
+				height: 350px;
+				padding-top: 190px;
+			}
+			#first,
+			#second,
+			#fourth,
+			#fifth,
+			#third {
+				border-top: 1px solid #ccc;
+			}
+			.mm-menu {
+				box-shadow: 0 0 40px rgba( 0, 0, 0, 0.2 );
+			}
+			.menuItemPage {
+                background-color: #FFDFDD;
+                color: Blue;
+            }
+			.menuItemTitle {
+                background-color: #E0B0FF;
+                color: #E42217;
+            }
+		</style>
+
+		<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+		<script type="text/javascript" src="js/jquery.mmenu.all.min.js?v="></script>
+        <!--script type="text/javascript" src="js/jquery-1.9.1.js"></script-->
+        <!--script type="text/javascript" src="js/jquery-ui-1.10.3.custom.js"></script-->
+		<script type="text/javascript">
+			$(function() {
+				var $menu = $('nav#menu'),
+					$html = $('html, body');
+
+				$menu.mmenu({
+					extensions 	: [ "pageshadow" ],
+					offCanvas	: {
+						position 	: "bottom",
+						zposition	: "front"
+					},
+					navbar 		: {
+						title 		: "VitalCard Menu"
+					}
+				});
+                var codPaziente = window.localStorage.getItem("codPaziente");
+                if (codPaziente) {
+                     var codicePaziente = document.getElementById("codPaziente");
+                     codicePaziente.value = codPaziente;
+                     getDatiPaziente();
+                }
+				var API = $menu.data( "mmenu" );
+				API.setSelected( $menu.find( "li" ).first() );
+
+				var closer = null;
+
+				$menu.find( 'a' ).on( 'click', function() {
+					closer = $(this).attr( "href" );
+				});
+
+				API.bind( "closed", function() {
+					if ( closer ) {
+						setTimeout( function() {
+							$html.animate({
+								scrollTop: $(closer).offset().top
+							});	
+							closer = null;
+						}, 25 );
+					}	
+				});
+            });
+            var host = "localhost:1464"; 
+            //var host = "www.atvinformatica.it"; 
+
+            function goToCF() {
+
+                var cognome = document.getElementById("txtCognome").value;
+                var nome = document.getElementById("txtNome").value;
+                var sesso = document.getElementById("txtSesso").value;
+                var data = document.getElementById("txtData").value;
+                var luogo = document.getElementById("txtLuogo").value;
+                var provincia = document.getElementById("txtProvincia").value;
+                // callCreaCF(cognome, nome, sesso, data, luogo, provincia
+                //ajaxCallCF(cognome, nome, sesso, data, luogo, provincia);
+                callHandler(); 
+            }
+
+            function ajaxCallCF(cognome, nome, sesso, data, luogo, provincia) {
+                //alert(cognome + ' ' + nome + ' ' + sesso + ' ' + data + ' ' + luogo + ' ' + provincia);
+                $.ajax({
+                    crossDomain: true,
+                    contentType: "application/json; charset=utf-8",
+                    url: "http://" + host + "/CF.aspx/creaCF",
+                    data: "{ cognome: '" + cognome + "', nome: '" + nome + "', sesso: '" + sesso + "', data: '" + data + "', luogo: '" + luogo + "', provincia: '" + provincia + "'}",
+                    dataType: "jsonp",
+                    success: showCF,
+                }).done(
+                    // nothing 
+                );
+
+            }
+            function showCF(res) {
+                //alert(res); 
+                var cf = document.getElementById("txtCF");
+                cf.value = res.d;
+            }
+            function jsonp_callback(res) {
+                //alert(res);
+                var cf = document.getElementById("txtCF");
+                cf.value = res;
+            }
+            function jsonp_callbackCP(res) {
+                //alert(res);
+                var dati = res.split("||");
+                var dp = document.getElementById("divDatiPersonali");
+                dp.innerHTML = dati[0];
+                var dm = document.getElementById("divDatiMalattie");
+                dm.innerHTML = dati[1];
+                var df = document.getElementById("imgDatiPaziente");
+                //alert(dati[2]);
+                df.src = 'http://' + host + '/img/' + dati[2];
+                //saveImagePaziente(); 
+            }
+            function saveImagePaziente() {
+                var codicePaziente = document.getElementById("codPaziente");
+                var url = 'http://' + host + '/img/' + codicePaziente + '.jpg' ;
+                var filePath = 'img/' + codicePaziente + '.jpg' ;
+                var fileTransfer = new FileTransfer();
+                var uri = encodeURI(url);
+
+                fileTransfer.download(
+                    uri,
+                    filePath,
+                    function(entry) {
+                        console.log("download complete: " + entry.fullPath);
+                    },
+                    function(error) {
+                        console.log("download error source " + error.source);
+                        console.log("download error target " + error.target);
+                        console.log("upload error code" + error.code);
+                    },
+                    false,
+                    {
+                        headers: {
+                            "Authorization": "Basic dGVzdHVzZXJuYW1lOnRlc3RwYXNzd29yZA=="
+                        }
+                    }
+                );
+            }
+            function getDatiPaziente() {
+                var codicePaziente = document.getElementById("codPaziente").value;
+                window.localStorage.setItem('codPaziente', codicePaziente); 
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackCP',
+                    url: 'http://' + host + '/TestServicePaziente.ashx?callback=?&codicePaziente='+ codicePaziente,
+                });
+            }
+            function callHandler() {
+                var cognome = document.getElementById("txtCognome").value;
+                var nome = document.getElementById("txtNome").value;
+                var sesso = document.getElementById("txtSesso").value;
+                var data = document.getElementById("txtData").value;
+                var luogo = document.getElementById("txtLuogo").value;
+                var provincia = document.getElementById("txtProvincia").value;
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callback',
+                    url: 'http://' + host + '/TestService.ashx?callback=?&cognome='+ cognome + '&nome=' + nome + '&sesso=' + sesso + '&data=' + data + '&luogo='+ luogo + '&provincia='+ provincia,
+                });
+            }
+		</script>
+	</head>
+	<body>
+		<div id="page">
+			<div class="header Fixed">
+				<a href="#menu"></a>
+	            VitalCARD Android DEMO
+		    </div>
+			<div class="content menuItemPage">
+				<div id="intro" class="menuItemInfo">					
+					<p><strong>Questa è la demo dell'app VitalCard.</strong><br />
+						Click sull'icona del menu per aprire la demo.</p>
+					
+					<p>Ogni voce del menu' rimanda ad una sezione della stessa pagina, con un effetto di scorrimento molto piacevole.</p>
+				</div>
+				<div id="first">
+					<p><strong>Dati Personali</strong><br /></p>
+                        <div id="divFotoPersonale">
+                            <table>
+                                <tr>
+                                    <td><img id="imgDatiPaziente" src=""/></td>
+                                </tr>
+                            </table>
+                        <div id="divDatiPersonali">
+                        <!--
+                        <table>
+                            <tr>
+                              <td>Foto </td>
+                              <td><img src=""/></td>
+                            </tr>
+                            <tr>
+                              <td>Cognome </td>
+                              <td id="pazCogn"></td>
+                            </tr>
+                            <tr>
+                              <td>Nome</td>
+                              <td id="pazNome"></td>
+                            </tr>
+                            <tr>
+                              <td>Nato a</td>
+                              <td id="pazLuogo"></td>
+                            </tr>
+                            <tr>
+                              <td>Nato il</td>
+                              <td id="pazData"></td>
+                            </tr>
+                            <tr>
+                              <td>Gruppo sanguigno</td>
+                              <td id="pazGrp"></td>
+                            </tr>
+                        </table>
+                        -->
+                        </div>
+                        <table>
+                            <tr>
+                              <td>Codice paziente</td>
+                              <td><input type="text" id="codPaziente" value=""/></td>
+                            </tr>
+                            <tr>
+                              <td>Riarica dati</td>
+                              <td><input type="button" value="Ricarica" onclick="getDatiPaziente();"/></td>
+                            </tr>
+                        </table>
+                       
+					    <p><a href="#menu">Ritorna al menu.</a></p>
+				</div>
+				<div id="second">
+					<p><strong>Malattie</strong><br /></p>
+                            <div id="divDatiMalattie">
+                            <!--
+                            <table>
+                                <tr>
+                                    <td>Cognome</td><td><input type="text" id="txtCognome" value='perrotta' /></td>
+                                </tr><tr>
+                                    <td>Nome</td><td><input type="text" id="txtNome" value='vito' /></td>
+                                </tr><tr>
+                                    <td>Sesso</td><td><input type="text" id="txtSesso" value='m'/></td>
+                                </tr><tr>
+                                    <td>Nato/a a</td><td><input type="text" id="txtLuogo" value='napoli'/></td>
+								</tr><tr>
+                                    <td>Provincia</td><td><input type="text" id="txtProvincia" value='na'/></td>
+                                </tr><tr>
+                                    <td>Nato/a il</td><td><input type="text" id="txtData" value='06/08/1960'/></td>
+                                </tr><tr>
+                                    <td>&nbsp;</td><td><input type="button" value="Calcola CF " onclick="goToCF();"/></td>
+                                </tr><tr>
+                                    <td>&nbsp;</td><td><input type="button" value="Reset" onclick="_reset();"/></td>
+                                </tr><tr>
+                                    <td>Codice Fiscale</td><td><input type="text" id="txtCF"/></td>
+                                </tr>
+                            </table>
+                            -->
+                            </div>
+						<p><a href="#menu">Ritorna al menu.</a></p>
+				</div>
+				<div id="third">
+					<p><strong>Patologie in atto</strong><br />
+						<a href="#menu">Ritorna al menu.</a></p>
+				</div>
+				<div id="fourth">
+					<p><strong>Allergie</strong><br />
+						<a href="#menu">Ritorna al menu.</a></p>
+				</div>
+				<div id="fifth">
+					<p><strong>Trattamenti non accettati</strong><br />
+						<a href="#menu">Ritorna al menu.</a></p>
+				</div>
+  			</div>
+		</div>
+		<nav id="menu" class="menuItemTitle">
+			<ul>
+				<li><a href="#intro">Intro</a></li>
+				<li><a href="#first">Dati Personali</a></li>
+				<li><a href="#second">Malattie</a></li>
+				<li><a href="#third">Patologie in atto</a></li>
+				<li><a href="#fourth">Allergie</a></li>
+				<li><a href="#fifth">Trattamenti non accettati</a></li>
+			</ul>
+		</nav>
+	</body>
+</html>
