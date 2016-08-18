@@ -116,9 +116,9 @@
 				});
             });
 			//var blProvaHost = true; 
-            //var host = "localhost:1464";
+            var host = "localhost:1464";
 			//var host = "10.0.0.3:80"; 			
-            var host = "www.atvinformatica.it"; 
+            //var host = "www.atvinformatica.it"; 
 
             function goToCF() {
 
@@ -285,8 +285,9 @@
 					var tr = $('<tr id=\"tdM_r' + i + '\"/>').appendTo(tbody);
 					for (var j = 0; j < totalCells; j++) {
 						// append <td> elements to previously created <tr> element:
+						var cp = '<img id=\"tdM_r' + i + '_c' + j + '\" src=\"img/checkedclipboard.png\" onclick=\"select(this);\" />'
 						if (j==0) {
-						  tr.append('<td id=\"tdM_r' + i + '_c' + j + '\" onclick=\"select(this);\">' + array[count] + '</td>');
+						  tr.append('<td align=\"center\">' + cp + '</td>');
 						} else {
 						  tr.append('<td>' + array[count] + '</td>');
 						}
