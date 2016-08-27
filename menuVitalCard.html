@@ -35,15 +35,15 @@
 				box-shadow: 0 0 40px rgba( 0, 0, 0, 0.2 );
 			}
 			.menuItemPage {
-                background-color: #FFFFFF;
+                background-color: SeaShell;
                 color: Blue;
             }
 			.menuItemTitle {
-                background-color: #FFFFFF;
+                background-color: Snow;
                 color: DarkBlue;
             }
 			TD {
-                font-size: 10pt;
+                font-size: 12pt;
             }
 		</style>
 
@@ -245,16 +245,31 @@
 				    contesto = "Malattie";
 				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
 				} 
-				if (cntx == 2) contesto = "Patologie"; 
-				if (cntx == 3) contesto = "Allergie"; 
+				if (cntx == 2) {
+				    contesto = "Patologie";
+				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
+				} 
+				if (cntx == 3) {
+					contesto = "Allergie";
+				    divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML;				
+				} 
 				if (cntx == 4) contesto = "Trattamenti non accettati"; 
 			    switch (actn) {
 					   case  1:
 							document.getElementById(panels[cntx]).style.display = "none"; 
 							document.getElementById(actions[cntx]).style.display = "none"; 
 							document.getElementById(edits[cntx]).innerHTML = editaElemento(contesto) ; 
+ 						    document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
 							$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
 							$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+							if (cntx == 2)  { // Patologie in atto
+							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
+							   document.getElementById('dataAl').disabled = true;  
+							}
+							if (cntx == 3)  { // Allergie 
+							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
+							   document.getElementById('dataAl').disabled = true;  
+							}
 						    document.getElementById(edits[cntx]).style.display = "block"; 
 						    break;
 					   case  2:
@@ -391,7 +406,7 @@
 			{
 				var elemento_body = "<table width='300'><tr><td>Dal</td><td><input type='text' id='dataDal'/></td></tr><tr><td>Al</td><td >" +
 					                "<input type='text' id='dataAl'/></td></tr><tr><td>Tipo</td><td id='tipo'>" + 
-									"<div id='divTipoElemento'><select><option>Malattia 1</option><option>Malattia 2</option></select></div>" + 
+									"<div id='divTipoElemento'></div>" + 
 									"</td></tr><tr><td>Descr.</td><td id='descr'><input type='text' /></td></tr><tr><td></td><td><input type='button' value='Accetta' onclick='setDati();'/>&nbsp;&nbsp;&nbsp;<input type='button' value='Annulla' onclick='setDati();'/></td></tr></table>"; 
 				return elemento_body;
 			}	
@@ -495,10 +510,136 @@
 			 
 		</div>
 		<!-- ------------------------------------------------------------------------------------------- -->
+		<div id="allergieListDiv" style="display: none;">
+		<select id="malattieList">
+		<option value=""></option>
+		<option >C1 pennicillina G</option> 
+		<option >C2 pennicillina V </option> 
+		<option >C5 ampicillina </option> 
+		<option >C6 amoxicillina</option>  
+		<option >C70 insulina porcina </option> 
+		<option >C71 insulina bovina </option> 
+		<option >C73 insulina umana </option> 
+		<option >1106 Cefalosporina C </option> 
+		<option >1107 succinilcolina </option> 
+		<option >E1 epitelio di gatto</option>
+		<option >E2 epitelio di cane</option>
+		<option >E3 forfora di cavallo</option>
+		<option >E4 forfora di mucca</option>
+		<option >E5 forfora di cane</option>
+		<option >E6 epitelio di cavia</option>
+		<option >E7 escrementi di piccione</option>
+		<option >E70 piume d’oca</option>
+		<option >E71 epitelio di topo</option>
+		<option >E72 urine di topo</option>
+		<option >E73 epitelio di ratto</option>
+		<option >E74 urine di ratto</option>
+		<option >E78 piume di parrocchetto</option>
+		<option >E80 epitelio di capra</option>
+		<option >E81 epitelio di pecora</option>
+		<option >E82 epitelio di coniglio</option>
+		<option >E83 epitelio di maiale</option>
+		<option >E84 epitelio di criceto</option>
+		<option >E85 piume di pollo</option>
+		<option >E86 piume d’anatra </option>
+		<option >F1 albume d’uovo</option> 
+		<option >F2 latte </option>
+		<option >F3 merluzzo</option> 
+		<option >F4 grano</option> 
+		<option >F5 segale</option> 
+		<option >F6 orzo</option> 
+		<option >F7 avena</option> 
+		<option >F8 mais</option> 
+		<option >F9 riso </option>
+		<option >F10 sesamo </option>
+		<option >F11 grano saraceno </option>
+		<option >F12 piselli </option>
+		<option >F13 arachidi </option>
+		<option >F14 soia </option>
+		<option >F15 fagioli </option>
+		<option >F17 nocciola </option>
+		<option >F18 noce </option>
+		<option >F20 mandorla </option>
+		<option >F23 granchio </option>
+		<option >F24 gambero </option>
+		<option >F25 pomodoro </option>
+		<option >F26 maiale </option>
+		<option >F27 manzo </option>
+		<option >F31 carota </option>
+		<option >F33 arancia </option>
+		<option >F35 patata </option>
+		<option >F36 noce di cocco </option>
+		<option >F37 mitili </option>
+		<option >F40 tonno </option>
+		<option >F41 salmone </option>
+		<option >F44 fragola </option>
+		<option >F45 lievito naturale </option>
+		<option >F47 aglio </option>
+		<option >F48 cipolla </option>
+		<option >F49 mela</option>
+		<option >F59 polpo </option>
+		<option >F61 sardina </option>
+		<option >F72 ananas </option>
+		<option >F75 tuorlo d’uovo </option>
+		<option >F76 alfa–lattoalbumina </option>
+		<option >F77 beta–lattoalbumina </option>
+		<option >F78 caseina </option>
+		<option >F79 glutine </option>
+		<option >F80 aragosta (astice)</option>
+		<option >F81 formaggio molle </option>
+		<option >F82 formaggio fermentato </option>
+		<option >F83 carne di pollo </option>
+		<option >F84 kiwi </option>
+		<option >F85 sedano </option>
+		<option >F86 prezzemolo </option>
+		<option >F87 melone </option>
+		<option >F88 carne d’agnello </option>
+		<option >F89 senape-mostarda </option>
+		<option >F90 malto </option>
+		<option >F91 mango </option>
+		<option >F92 banana </option>
+		<option >F93 cacao </option>
+		<option >F94 pera </option>
+		<option >F95 pesca </option>
+		<option >F203 pistacchio </option>
+		<option >F204 trota</option>
+		<option >F205 aringa</option>
+		<option >F206 sgombro</option>
+		<option >F208 limone</option>
+		<option >F210 ananas</option>
+		<option >F212 funghi champignon</option>
+		<option >F213 carne di coniglio</option>
+		<option >F214 spinaci</option>
+		<option >F215 lattuga </option>
+		<option >F216 cavolo</option>
+		<option >F221 caffè</option>
+		<option >F222 thé</option>
+		<option >F234 vaniglia</option>
+		<option >F237 albicocca</option>
+		<option >F242 ciliegia</option>
+		<option >F244 cetriolo</option>
+		<option >F254 platessa</option>
+		<option >F256 noce</option>
+		<option >F258 calamaro</option>
+		<option >F259 uva</option>
+		<option >F261 asparagi</option>
+		<option >F262 melanzana</option>
+		<option >F263 pepe verde</option>
+		<option >F269 basilico</option>
+		<option >F280 pepe nero</option>
+		<option >F282 noce moscata</option>
+		<option >F283 origano</option>
+		<option >F284 tacchino</option>
+		<option >F291 cavolfiore</option>
+		<option >F293 papaia</option>
+		<option >F329 anguria</option>
+		<option >F405 menta</option>
+		</select>
+		</div>
+		
 		<div id="malattieListDiv" style="display: none;">
 		<select id="malattieList">
 		<option value=""></option>
-		<!--
 		<option value="/Sintomi/Acalasia">Acalasia</option>
         <option value="/Sintomi/Acetonemia">Acetonemia</option>
         <option value="/Sintomi/Acidosi_metabolica">Acidosi metabolica</option>
@@ -1132,8 +1273,7 @@
         <option value="/Sintomi/Ulcera_gastrica">Ulcera gastrica</option>
         <option value="/Sintomi/Ulcera-peptica">Ulcera peptica</option>
         <option value="/Sintomi/Unghia_incarnita">Unghia incarnita</option>
-		-->
-        <option value="/Sintomi/Uretrite">Uretrite</option>
+		<option value="/Sintomi/Uretrite">Uretrite</option>
         <option value="/Sintomi/Ustioni">Ustioni</option>
         <option value="/Sintomi/Uveite">Uveite</option>
         <option value="/Sintomi/Vaginite">Vaginite</option>
