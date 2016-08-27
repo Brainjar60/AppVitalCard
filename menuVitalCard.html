@@ -241,36 +241,48 @@
 			    icont = cntx;
 				var contesto = ""; 
 				var divTipoElementoContent = "";
-				if (cntx == 1) {
+				if (cntx == 1 || cntx == '1') {
 				    contesto = "Malattie";
 				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
 				} 
-				if (cntx == 2) {
+				if (cntx == 2 || cntx == '2') {
 				    contesto = "Patologie";
-				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
+				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 						
 				} 
-				if (cntx == 3) {
+				if (cntx == 3 || cntx == '3') {
 					contesto = "Allergie";
 				    divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML;				
 				} 
-				if (cntx == 4) contesto = "Trattamenti non accettati"; 
+				if (cntx == 4 || cntx == '4') {
+					contesto = "Trattamenti non accettati";
+					divTipoElementoContent = ""; 
+				}					
 			    switch (actn) {
 					   case  1:
 							document.getElementById(panels[cntx]).style.display = "none"; 
 							document.getElementById(actions[cntx]).style.display = "none"; 
-							document.getElementById(edits[cntx]).innerHTML = editaElemento(contesto) ; 
+							document.getElementById(edits[cntx]).innerHTML = editaElemento() ; 
  						    document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
+
+
 							$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
 							$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
-							if (cntx == 2)  { // Patologie in atto
+							if (cntx == 1 || cntx == '1')  { // Malattie 
+							   document.getElementById('malattieList').style.display = "block";
+							}
+							if (cntx == 2 || cntx == '2')  { // Patologie in atto
 							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
 							   document.getElementById('dataAl').disabled = true;  
+							   document.getElementById('malattieList').style.display = "block";
 							}
-							if (cntx == 3)  { // Allergie 
+							if (cntx == 3 || cntx == '3')  { // Allergie 
 							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-							   document.getElementById('dataAl').disabled = true;  
+							   document.getElementById('dataAl').disabled = true; 
+							   document.getElementById('allergieList').style.display = "block";
 							}
-						    document.getElementById(edits[cntx]).style.display = "block"; 
+
+						    document.getElementById(edits[cntx]).style.display = "block";
+
 						    break;
 					   case  2:
 						   break;	
@@ -402,11 +414,11 @@
 				count = 0;
 
 			}	
-			function editaElemento(elemento) 
+			function editaElemento() 
 			{
-				var elemento_body = "<table width='300'><tr><td>Dal</td><td><input type='text' id='dataDal'/></td></tr><tr><td>Al</td><td >" +
+				var elemento_body = "<table width='300' style='display: block;'><tr><td>Dal</td><td><input type='text' id='dataDal'/></td></tr><tr><td>Al</td><td >" +
 					                "<input type='text' id='dataAl'/></td></tr><tr><td>Tipo</td><td id='tipo'>" + 
-									"<div id='divTipoElemento'></div>" + 
+									"<div id='divTipoElemento' style='display: block;'></div>" + 
 									"</td></tr><tr><td>Descr.</td><td id='descr'><input type='text' /></td></tr><tr><td></td><td><input type='button' value='Accetta' onclick='setDati();'/>&nbsp;&nbsp;&nbsp;<input type='button' value='Annulla' onclick='setDati();'/></td></tr></table>"; 
 				return elemento_body;
 			}	
@@ -421,7 +433,8 @@
 				}
 				document.getElementById(panels[icont]).style.display = "block"; 
 				document.getElementById(actions[icont]).style.display = "block"; 
-				document.getElementById(edits[icont]).style.display = "none";	 
+				document.getElementById(edits[icont]).style.display = "none";	
+				document.getElementById(edits[icont]).innerHTML = '<div id="' + edits[icont] + '" style="display: none;"></div>'; 				
 			}
 		</script>
 	</head>
@@ -511,7 +524,7 @@
 		</div>
 		<!-- ------------------------------------------------------------------------------------------- -->
 		<div id="allergieListDiv" style="display: none;">
-		<select id="malattieList">
+		<select id="allergieList">
 		<option value=""></option>
 		<option >C1 pennicillina G</option> 
 		<option >C2 pennicillina V </option> 
@@ -565,6 +578,8 @@
 		<option >F25 pomodoro </option>
 		<option >F26 maiale </option>
 		<option >F27 manzo </option>
+		<option >F29 banana</option>
+		<option >F30 pera</option>
 		<option >F31 carota </option>
 		<option >F33 arancia </option>
 		<option >F35 patata </option>
@@ -577,8 +592,11 @@
 		<option >F47 aglio </option>
 		<option >F48 cipolla </option>
 		<option >F49 mela</option>
+		<option >F52 cioccolata</option>
 		<option >F59 polpo </option>
 		<option >F61 sardina </option>
+		<option >F63 manzo</option>
+		<option >F65 lenticchie</option>
 		<option >F72 ananas </option>
 		<option >F75 tuorlo d’uovo </option>
 		<option >F76 alfa–lattoalbumina </option>
@@ -601,6 +619,8 @@
 		<option >F93 cacao </option>
 		<option >F94 pera </option>
 		<option >F95 pesca </option>
+		<option >F157 merluzzo </option>
+		<option >F162 aogliola </option>
 		<option >F203 pistacchio </option>
 		<option >F204 trota</option>
 		<option >F205 aringa</option>
@@ -619,6 +639,9 @@
 		<option >F242 ciliegia</option>
 		<option >F244 cetriolo</option>
 		<option >F254 platessa</option>
+		<option >F251 parmigiano</option>
+		<option >F252 uovo intero</option>
+		<option >F255 grano</option>
 		<option >F256 noce</option>
 		<option >F258 calamaro</option>
 		<option >F259 uva</option>
