@@ -167,9 +167,9 @@
 			}
 			
 			//var blProvaHost = true; 
-            //var host = "localhost:1464";
+            var host = "localhost:1464";
 			//var host = "10.0.0.3:80"; 			
-            var host = "www.atvinformatica.it"; 
+            //var host = "www.atvinformatica.it"; 
 			var availScreenWidth = window.screen.availWidth;
 			var availScreenHeight = window.screen.availHeight;
 			var currScreenWidth = window.screen.width;
@@ -717,6 +717,7 @@
                 window.localStorage.setItem("datiPatologie", dati[1]);
                 window.localStorage.setItem("datiAllergie", dati[2]);
                 window.localStorage.setItem("datiTrattamenti", dati[3]);
+				getInitializedData();
 			}
 			function EsportaDatiPaziente() {
                 var codicePaziente = document.getElementById("codPaziente").value;
