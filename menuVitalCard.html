@@ -82,13 +82,10 @@
 						title 		: "VitalCard Menu"
 					}
 				});
-                var codPaziente = window.localStorage.getItem('codPaziente'); 
+
+			    var codPaziente = window.localStorage.getItem('codPaziente'); 
                 var imgPaziente = window.localStorage.getItem("imgPaziente");
                 var datPaziente = window.localStorage.getItem("datiPersonali");
-                var datMalattie = window.localStorage.getItem("datiMalattie");
-                var datPatologie = window.localStorage.getItem("datiPatologie");
-                var datAllergie = window.localStorage.getItem("datiAllergie");
-                var datTrattamenti = window.localStorage.getItem("datiTrattamenti");
                 if (codPaziente) {
                      var codicePaziente = document.getElementById("codPaziente");
                      codicePaziente.value = codPaziente;
@@ -100,25 +97,7 @@
 				    var dp = document.getElementById("divDatiPersonali");
                     dp.innerHTML = datPaziente;
 				}
-				if (datMalattie) {
-				   	var dm = document.getElementById("divDatiMalattie");
-                	dm.innerHTML = datMalattie;
-					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 				}
-				if (datPatologie) {
-				   	var dp = document.getElementById("divDatiPatologie");
-                	dp.innerHTML = datPatologie;
-					arrPatologie = fromJSON(window.localStorage.getItem("datiPatologieArr",'P')); 
-				}
-				if (datAllergie) {
-				   	var da = document.getElementById("divDatiAllergie");
-                	da.innerHTML = datAllergie;
-					arrAllergie = fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
-				}
-				if (datTrattamenti) {
-				   	var dt = document.getElementById("divDatiTrattamenti");
-                	dt.innerHTML = datTrattamenti;
-					arrTrattamenti = fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
-				}				
+				getInitializedData(); 
 				var API = $menu.data( "mmenu" );
 				API.setSelected( $menu.find( "li" ).first() );
 
@@ -159,6 +138,32 @@
 					this.Descrizione= descr; 
 					//this.DisplayValues(); 
 				}
+			}
+			function getInitializedData() {
+                var datMalattie = window.localStorage.getItem("datiMalattie");
+                var datPatologie = window.localStorage.getItem("datiPatologie");
+                var datAllergie = window.localStorage.getItem("datiAllergie");
+                var datTrattamenti = window.localStorage.getItem("datiTrattamenti");
+
+				if (datMalattie) {
+				   	var dm = document.getElementById("divDatiMalattie");
+                	dm.innerHTML = datMalattie;
+					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 				}
+				if (datPatologie) {
+				   	var dp = document.getElementById("divDatiPatologie");
+                	dp.innerHTML = datPatologie;
+					arrPatologie = fromJSON(window.localStorage.getItem("datiPatologieArr",'P')); 
+				}
+				if (datAllergie) {
+				   	var da = document.getElementById("divDatiAllergie");
+                	da.innerHTML = datAllergie;
+					arrAllergie = fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
+				}
+				if (datTrattamenti) {
+				   	var dt = document.getElementById("divDatiTrattamenti");
+                	dt.innerHTML = datTrattamenti;
+					arrTrattamenti = fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
+				}				
 			}
 			
 			//var blProvaHost = true; 
@@ -622,7 +627,7 @@
 				var tbody = $('#body' + tableLetterId);
 				var i = getArrayCount(tableLetterId); 
 				var tr = $('<tr id=\"td' + tableLetterId + '_r' + i + '\"/>').appendTo(tbody);
-				// append <td> elements to previously created <tr> element:
+ 				// append <td> elements to previously created <tr> element:
 				var key = 'td' + tableLetterId + '_r' + i + '_c' + 1; 
 				var cp = '<input type=\"button\" id=\"' + key + '\" value=\"°\" onclick=\"selectRow(this);\" />'
 				tr.append('<td align=\"center\">' + cp + '</td>');
@@ -698,10 +703,32 @@
 				document.getElementById(edits[icont]).innerHTML = '<div id="' + edits[icont] + '" style="display: none;"></div>'; 				
 			}
 			function ImportaDatiPaziente() {
-				alert("Funzionalità non ancora implementata."); 
+                var codicePaziente = document.getElementById("codPaziente").value;
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackBT',
+                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Import',
+                }); 
+			}
+			function jsonp_callbackBT(res) {
+                //alert(res);
+                var dati = res.split("||");
+				window.localStorage.setItem("datiMalattie", dati[0]);
+                window.localStorage.setItem("datiPatologie", dati[1]);
+                window.localStorage.setItem("datiAllergie", dati[2]);
+                window.localStorage.setItem("datiTrattamenti", dati[3]);
 			}
 			function EsportaDatiPaziente() {
-				alert("Funzionalità non ancora implementata."); 
+                var codicePaziente = document.getElementById("codPaziente").value;
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackBT',
+                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Export&blobTable='+ 
+																								window.localStorage.getItem("datiMalattie") + '||' +
+																								window.localStorage.getItem("datiPatologie") + '||' +
+																								window.localStorage.getItem("datiAllergie") + '||' +
+																								window.localStorage.getItem("datiTrattamenti") + '||',
+                }); 
 			}
 		</script>
 	</head>
