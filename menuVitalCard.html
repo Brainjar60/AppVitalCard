@@ -148,7 +148,8 @@
 				if (datMalattie) {
 				   	var dm = document.getElementById("divDatiMalattie");
                 	dm.innerHTML = datMalattie;
-					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 				}
+					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 	
+				}
 				if (datPatologie) {
 				   	var dp = document.getElementById("divDatiPatologie");
                 	dp.innerHTML = datPatologie;
@@ -711,13 +712,26 @@
                 }); 
 			}
 			function jsonp_callbackBT(res) {
-                //alert(res);
                 var dati = res.split("||");
-				window.localStorage.setItem("datiMalattie", dati[0]);
-                window.localStorage.setItem("datiPatologie", dati[1]);
-                window.localStorage.setItem("datiAllergie", dati[2]);
-                window.localStorage.setItem("datiTrattamenti", dati[3]);
-				getInitializedData();
+				//window.localStorage.setItem("datiMalattieArr", dati[0]);
+                //window.localStorage.setItem("datiPatologieArr", dati[1]);
+                //window.localStorage.setItem("datiAllergieArr", dati[2]);
+                //window.localStorage.setItem("datiTrattamentiArr", dati[3]);
+
+				arrMalattie = new Array();  
+				arrPatologie = new Array();  
+				arrAllergie = new Array();  
+				arrTrattamenti = new Array();  
+				
+				var tmpMalattie = dati[0]; //fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 
+				var tmpPatologie = dati[1]; //fromJSON(window.localStorage.getItem("datiPatologieArr",'P')); 
+				var tmpAllergie = dati[2]; //fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
+				var tmpTrattamenti = dati[3]; //fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
+				// getInitializedData();
+				resetTableFromArray('M', tmpMalattie); 
+				resetTableFromArray('P', tmpPatologie); 
+				resetTableFromArray('A', tmpAllergie); 
+				resetTableFromArray('T', tmpTrattamenti); 
 			}
 			function EsportaDatiPaziente() {
                 var codicePaziente = document.getElementById("codPaziente").value;
@@ -725,11 +739,34 @@
                     dataType: 'jsonp',
                     jsonpCallback: 'jsonp_callbackBT',
                     url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Export&blobTable='+ 
-																								window.localStorage.getItem("datiMalattie") + '||' +
-																								window.localStorage.getItem("datiPatologie") + '||' +
-																								window.localStorage.getItem("datiAllergie") + '||' +
-																								window.localStorage.getItem("datiTrattamenti") + '||',
+																								window.localStorage.getItem("datiMalattieArr") + '||' +
+																								window.localStorage.getItem("datiPatologieArr") + '||' +
+																								window.localStorage.getItem("datiAllergieArr") + '||' +
+																								window.localStorage.getItem("datiTrattamentiArr"),
                 }); 
+			}
+			function resetTableFromArray(tableLetterId, arraySource) {
+				var tabelle = new Array(); 
+				tabelle['M'] = 'tblMalattie'; 
+				tabelle['P'] = 'tblPatologie'; 
+				tabelle['A'] = 'tblAllergie'; 
+				tabelle['T'] = 'tblTrattamenti'; 
+				var bodyitems = new Array(); 
+				bodyitems['M'] = "<table id=\"tblMalattie\" width=\"300\" border=\"1\"><tbody id=\"bodyM\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+                bodyitems['P'] = "<table id=\"tblPatologie\" width=\"300\" border=\"1\"><tbody id=\"bodyP\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+                bodyitems['A'] = "<table id=\"tblAllergie\" width=\"300\" border=\"1\"><tbody id=\"bodyA\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+                bodyitems['T'] = "<table id=\"tblTrattamenti\" width=\"300\" border=\"1\"><tbody id=\"bodyT\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+
+				var tb = $("#" + tabelle[tableLetterId] + " > tbody").html(bodyitems[tableLetterId]);
+				var sourceElement = arraySource.split('\$'); 
+				for (var i=0; i<sourceElement.length; i++) { 
+					var arrElem = sourceElement[i];
+					if (!arrElem || arrElem.length == 0 || arrElem == null || arrElem == 'null')
+						break; 
+					var dati = arrElem.split('\|'); 
+					var elemento = new objItem(dati[0], dati[1],dati[2],dati[3]); 
+					writeTable(tableLetterId, elemento); 
+				}
 			}
 		</script>
 	</head>
