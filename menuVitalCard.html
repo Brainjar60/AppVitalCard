@@ -635,6 +635,9 @@
 									"<div id='divTipoElemento' style='display: block;'></div>" + 
 									"</td></tr><tr><td>Descr.</td><td><input type='text' id='descr'/></td></tr><tr><td></td><td><input type='button' value='Accetta' onclick='setDati(1);'/>&nbsp;&nbsp;&nbsp;<input type='button' value='Annulla' onclick='setDati(0);'/></td></tr></table>"; 
 				} else {
+					// ---------------------------------------------------------
+									blModifyItem = true;				
+					// ---------------------------------------------------------
 					elemento_body = "<table width='300' style='display: block;'><tr><td>Dal</td><td><input type='text' id='dataDal' value='"+ elemento.Dal  +"'/></td></tr><tr><td>Al</td><td >" +
 					                "<input type='text' id='dataAl' value='"+ elemento.Al  +"'/></td></tr><tr><td>Tipo</td><td id='tipo'>" + 
 									"<div id='divTipoElemento' style='display: block;'></div>" + 
@@ -652,9 +655,6 @@
 				var objSel = ""; 				
 				var gTipo = ""; 		
 				var gDesc = ""; 
-				// ---------------------------------------------------------
-								blModifyItem = true;				
-				// ---------------------------------------------------------
 				if (action && action == 1) {
 					gDal = document.getElementById('dataDal').value; 		
 					gAl = document.getElementById('dataAl').value;
@@ -663,7 +663,8 @@
 					gDesc = document.getElementById('descr').value; 	
 					// aggiungi i dati nella lista ....
 					var elemento = new objItem(); 
-					elemento.SetDati(gDal,gAl,gTipo, gDesc); 
+					elemento.SetDati(gDal,gAl,gTipo, gDesc);
+					if (blModifyItem) deleteTableItem(idx1, idx2) 					
 					writeTable(lettere[icont], elemento);		
 				} else if (action && action == 9) {
 				   
