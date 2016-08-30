@@ -447,6 +447,7 @@
 
 				var key = 'td' + tableLetterId + '_r' + idx; 
 				var row = document.getElementById(key);
+				if (!row) return; 
 				row.outerHTML = "";
 				delete row;
 
@@ -664,7 +665,10 @@
 					// aggiungi i dati nella lista ....
 					var elemento = new objItem(); 
 					elemento.SetDati(gDal,gAl,gTipo, gDesc);
-					if (blModifyItem) deleteTableItem(idx1, idx2) 					
+					if (blModifyItem) { 
+						deleteTableItem(idx1, idx2); 
+						blModifyItem = false;
+					}						
 					writeTable(lettere[icont], elemento);		
 				} else if (action && action == 9) {
 				   
