@@ -55,12 +55,22 @@
         <script src="js/jquery-ui.js"></script>
         <script src="js/ui.datepicker-it.js"></script>
   		<script type="text/javascript">
-			var arrMalattie; // = new Array(); 
-			var arrPatologie; // = new Array(); 
-			var arrAllergie; // = new Array(); 
-			var arrTrattamenti; // = new Array(); 
-			var blModifyItem = false; 
-			$(function() {
+			var arrMalattie = new Array(); 
+			var arrPatologie = new Array(); 
+			var arrAllergie = new Array(); 
+			var arrTrattamenti = new Array(); 
+			var contesti = new Array('','M','P','A','T'); 
+			var lastElemento = null; 
+			var icont = 0; 
+
+			var contestiL = new Array('','Malattie','Patologie','Allergie','Trattamenti'); 
+            var arrTabelle = new Array(); 
+			var tblM = "<table id=\"tblMalattie\" width=\"300\" border=\"1\"><tbody id=\"bodyM\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+            var tblP = "<table id=\"tblPatologie\" width=\"300\" border=\"1\"><tbody id=\"bodyP\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+            var tblA = "<table id=\"tblAllergie\" width=\"300\" border=\"1\"><tbody id=\"bodyA\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+            var tblT = "<table id=\"tblTrattamenti\" width=\"300\" border=\"1\"><tbody id=\"bodyT\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+
+			function startAll() {
 				
 				arrMalattie = new Array(); 
 				arrPatologie = new Array(); 
@@ -69,6 +79,9 @@
 				$("#dataDal").datepicker();
 				$("#dataAl").datepicker();
 				
+				$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+				$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+
 				var $menu = $('nav#menu'),
 					$html = $('html, body');
 
@@ -98,6 +111,7 @@
                     dp.innerHTML = datPaziente;
 				}
 				getInitializedData(); 
+				
 				var API = $menu.data( "mmenu" );
 				API.setSelected( $menu.find( "li" ).first() );
 
@@ -117,124 +131,82 @@
 						}, 25 );
 					}	
 				});
-            });
-			// --------------------------------------- Oggetti -------------------------------------------------
-			function objMalattia( dal, al, tipo, desc) {
-				this.Dal = dal; 
-				this.Al = al; 
-				this.Tipo = tipo; 
-				this.Descrizione = desc; 
-			}
-			function objItem( dal, al, tipo, descr) {
-				this.Dal = dal; 
-				this.Al = al; 
-				this.Tipo = tipo; 
-				this.Descrizione = descr; 
-				this.DisplayValues = "Dal " + this.Dal + "\n" + "Al " + this.Al + "\n" + "Tipo " + this.Tipo + "\n" + "Descr. " + this.Descrizione; 
-				this.SetDati = function(dal, al, tipo, descr) {
-					this.Dal = dal; 
-					this.Al= al; 
-					this.Tipo= tipo; 
-					this.Descrizione= descr; 
-					//this.DisplayValues(); 
-				}
-			}
-			function getInitializedData() {
-                var datMalattie = window.localStorage.getItem("datiMalattie");
-                var datPatologie = window.localStorage.getItem("datiPatologie");
-                var datAllergie = window.localStorage.getItem("datiAllergie");
-                var datTrattamenti = window.localStorage.getItem("datiTrattamenti");
-
-				if (datMalattie) {
-				   	var dm = document.getElementById("divDatiMalattie");
-                	dm.innerHTML = datMalattie;
-					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 	
-				}
-				if (datPatologie) {
-				   	var dp = document.getElementById("divDatiPatologie");
-                	dp.innerHTML = datPatologie;
-					arrPatologie = fromJSON(window.localStorage.getItem("datiPatologieArr",'P')); 
-				}
-				if (datAllergie) {
-				   	var da = document.getElementById("divDatiAllergie");
-                	da.innerHTML = datAllergie;
-					arrAllergie = fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
-				}
-				if (datTrattamenti) {
-				   	var dt = document.getElementById("divDatiTrattamenti");
-                	dt.innerHTML = datTrattamenti;
-					arrTrattamenti = fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
-				}				
-			}
-			
-			//var blProvaHost = true; 
-            //var host = "localhost:1464";
-			//var host = "10.0.0.3:80"; 			
-            var host = "www.atvinformatica.it"; 
-			var availScreenWidth = window.screen.availWidth;
-			var availScreenHeight = window.screen.availHeight;
-			var currScreenWidth = window.screen.width;
-			var currScreenHeight = window.screen.height;
-            function goToCF() {
-
-                var cognome = document.getElementById("txtCognome").value;
-                var nome = document.getElementById("txtNome").value;
-                var sesso = document.getElementById("txtSesso").value;
-                var data = document.getElementById("txtData").value;
-                var luogo = document.getElementById("txtLuogo").value;
-                var provincia = document.getElementById("txtProvincia").value;
-                callHandler(); 
             }
-
-            function ajaxCallCF(cognome, nome, sesso, data, luogo, provincia) {
-                //alert(cognome + ' ' + nome + ' ' + sesso + ' ' + data + ' ' + luogo + ' ' + provincia);
+			function EsportaDatiPaziente() {
+                var codicePaziente = document.getElementById("codPaziente").value;
+				var s1 = window.localStorage.getItem("datiMalattieArr");
+				var s2 = window.localStorage.getItem("datiPatologieArr");
+				var s3 = window.localStorage.getItem("datiAllergieArr");
+				var s4 = window.localStorage.getItem("datiTrattamentiArr");
+				if(!s1) s1 = ""; 
+				if(!s2) s2 = ""; 
+				if(!s3) s3 = ""; 
+				if(!s4) s4 = ""; 
+				var stringone = s1 + '<§>' + s2 + '<§>' +s3 + '<§>' +s4; 
                 $.ajax({
-                    crossDomain: true,
-                    contentType: "application/json; charset=utf-8",
-                    url: "http://" + host + "/CF.aspx/creaCF",
-                    data: "{ cognome: '" + cognome + "', nome: '" + nome + "', sesso: '" + sesso + "', data: '" + data + "', luogo: '" + luogo + "', provincia: '" + provincia + "'}",
-                    dataType: "json",
-                    success: showCF,
-                }).done(
-                    // nothing 
-                );
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackBT',
+                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Export&blobTable='+ stringone,
+                }); 
+            }
+			function ImportaDatiPaziente() {
+                var codicePaziente = document.getElementById("codPaziente").value;
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackBT',
+                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Import',
+                }); 
+			}
+			function jsonp_callbackBT(res) {
+                var dati = res.split("<§>");
 
-            }
-            function showCF(res) {
-                //alert(res); 
-                var cf = document.getElementById("txtCF");
-                cf.value = res.d;
-            }
-            function jsonp_callback(res) {
-                //alert(res);
-                var cf = document.getElementById("txtCF");
-                cf.value = res;
+				arrMalattie = new Array();  
+				arrPatologie = new Array();  
+				arrAllergie = new Array();  
+				arrTrattamenti = new Array();  
+				
+				if (dati[0]) arrMalattie    = dati[0].split('\$'); 
+				if (dati[1]) arrPatologie   = dati[1].split('\$');  
+				if (dati[2]) arrAllergie    = dati[2].split('\$'); 
+				if (dati[3]) arrTrattamenti = dati[3].split('\$'); 
+				
+				localStorage.setItem("datiMalattieArr", dati[0]);
+				localStorage.setItem("datiPatologieArr", dati[1]);
+				localStorage.setItem("datiAllergieArr", dati[2]);
+				localStorage.setItem("datiTrattamentiArr", dati[3]);
+
+				getInitializedData();
+
+			}			
+            function getDatiPaziente() {
+                var codicePaziente = document.getElementById("codPaziente").value;
+                window.localStorage.setItem('codPaziente', codicePaziente); 
+                $.ajax({
+                    dataType: 'jsonp',
+                    jsonpCallback: 'jsonp_callbackCP',
+                    url: 'http://' + host + '/TestServicePaziente.ashx?callback=?&codicePaziente='+ codicePaziente,
+                });
             }
             function jsonp_callbackCP(res) {
-                //alert(res);
                 var dati = res.split("||");
-                var dp = document.getElementById("divDatiPersonali");
-                dp.innerHTML = dati[0];
+                var dc = document.getElementById("divDatiPersonali");
+                dc.innerHTML = dati[0];
 				localStorage.setItem("datiPersonali", dati[0]);
                 
 				var dm = document.getElementById("divDatiMalattie");
-                dm.innerHTML = dati[1];
-				localStorage.setItem("datiMalattie", dati[1]);
+                if (dm) dm.innerHTML = tblM; // = dati[1];
 				window.localStorage.removeItem("datiMalattieArr");
 				
                 var dp = document.getElementById("divDatiPatologie");
-                dp.innerHTML = dati[2];
-				localStorage.setItem("datiPatologie", dati[2]);
+                if (dp) dm.innerHTML = tblP;
 				window.localStorage.removeItem("datiPatologieArr");
 				
                 var da = document.getElementById("divDatiAllergie");
-                da.innerHTML = dati[3];
-				localStorage.setItem("datiAllergie", dati[3]);
+                if (da) dm.innerHTML = tblA;
 				window.localStorage.removeItem("datiAllergieArr");
 				
                 var dt = document.getElementById("divDatiTrattamenti");
-                dt.innerHTML = dati[4];
-				localStorage.setItem("datiTrattamenti", dati[4]);
+                if (dt) dm.innerHTML = tblT;
 				window.localStorage.removeItem("datiTrattamentiArr");
                 
 				var df = document.getElementById("imgDatiPaziente");
@@ -246,189 +218,233 @@
 				arrAllergie = new Array(); 
 				arrTrattamenti = new Array(); 
             }
+			function resetDatiPaziente() {
+				var dm = document.getElementById("divDatiMalattie");
+                if (dm) dm.innerHTML = tblM; 
+				window.localStorage.removeItem("datiMalattieArr");
+				
+                var dp = document.getElementById("divDatiPatologie");
+                if (dp) dp.innerHTML = tblP;
+				window.localStorage.removeItem("datiPatologieArr");
+				
+                var da = document.getElementById("divDatiAllergie");
+                if (da) da.innerHTML = tblA;
+				window.localStorage.removeItem("datiAllergieArr");
+				
+                var dt = document.getElementById("divDatiTrattamenti");
+                if (dt) dt.innerHTML = tblT;
+				window.localStorage.removeItem("datiTrattamentiArr");
+				
+				arrMalattie = new Array(); 
+				arrPatologie = new Array(); 
+				arrAllergie = new Array(); 
+				arrTrattamenti = new Array(); 			
+			}
+			function saveInLocalStorage(cntx) {
+				switch (cntx) {
+					case 1: 
+						localStorage.setItem("datiMalattieArr", toJSON(arrMalattie));
+						break; 
+					case 2: 
+						localStorage.setItem("datiPatologieArr", toJSON(arrPatologie));
+						break; 
+					case 3: 
+						localStorage.setItem("datiAllergieArr", toJSON(arrAllergie));
+						break; 
+					case 4: 
+						localStorage.setItem("datiTrattamentiArr", toJSON(arrTrattamenti));
+						break; 
+				}
+			}
             function getImagePaziente() {
                 var dataImage = localStorage.getItem('imgPaziente');
                 var bannerImg = document.getElementById('imgDatiPaziente');
                 bannerImg.src = "data:image/jpg;base64," + dataImage;
             }
-            function saveImage(dfSrc) {
-                localStorage.setItem("imgPaziente", imgData);
-			}
-            function getBase64Image(img) {
-                var canvas = document.createElement("canvas");
-                canvas.width = img.width;
-                canvas.height = img.height;
 
-                var ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-
-                var dataURL = canvas.toDataURL("image/jpg");
-
-                return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-            }
-
-            function getDatiPaziente() {
-                var codicePaziente = document.getElementById("codPaziente").value;
-                window.localStorage.setItem('codPaziente', codicePaziente); 
-                $.ajax({
-                    dataType: 'jsonp',
-                    jsonpCallback: 'jsonp_callbackCP',
-                    url: 'http://' + host + '/TestServicePaziente.ashx?callback=?&codicePaziente='+ codicePaziente,
-                });
-            }
-            function callHandler() {
-                var cognome = document.getElementById("txtCognome").value;
-                var nome = document.getElementById("txtNome").value;
-                var sesso = document.getElementById("txtSesso").value;
-                var data = document.getElementById("txtData").value;
-                var luogo = document.getElementById("txtLuogo").value;
-                var provincia = document.getElementById("txtProvincia").value;
-                $.ajax({
-                    dataType: 'jsonp',
-                    jsonpCallback: 'jsonp_callback',
-                    url: 'http://' + host + '/TestService.ashx?callback=?&cognome='+ cognome + '&nome=' + nome + '&sesso=' + sesso + '&data=' + data + '&luogo='+ luogo + '&provincia='+ provincia,
-                });
-            }
-			var icont = 0;
-			var panels = new Array("","divDatiMalattie","divDatiPatologie","divDatiAllergie","divDatiTrattamenti");
-			var actions = new Array("","azioni_malattie","azioni_patologie","azioni_allergie","azioni_trattamenti");
-			var edits = new Array("","divEditaMalattia","divEditaPatologia","divEditaAllergia","divEditaTrattamento");
-			var liste = new Array("", "malattieList", "malattieList", "allergieList", "trattamentiList"); 
-			function clickRef(actn, cntx)
-	        {
-			    setDati(0); 
-			    icont = cntx;
-				var contesto = ""; 
-				var divTipoElementoContent = "";
-				if (cntx == 1 || cntx == '1') {
-				    contesto = "Malattie";
-				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
-				} 
-				if (cntx == 2 || cntx == '2') {
-				    contesto = "Patologie";
-				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 						
-				} 
-				if (cntx == 3 || cntx == '3') {
-					contesto = "Allergie";
-				    divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML;				
-				} 
-				if (cntx == 4 || cntx == '4') {
-					contesto = "Trattamenti non accettati";
-					divTipoElementoContent = document.getElementById("trattamentiListDiv").innerHTML;; 
+			function getInitializedData() {
+				var htmlTable = document.getElementById('tblMalattie'); 					
+				htmlTable.outerHTML = tblM;					
+				arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 
+				for (var _i=0; _i < arrMalattie.length; _i++)  	{
+					var arrElem = new objItem(); 
+					arrElem.SetPipedData(arrMalattie[_i]); 
+					addTableRowItem('tblMalattie', arrElem.Key, arrElem);
 				}					
-			    switch (actn) {
-					   case  1:
-							document.getElementById(panels[cntx]).style.display = "none"; 
-							document.getElementById(actions[cntx]).style.display = "none"; 
-							document.getElementById(edits[cntx]).innerHTML = editaElemento() ; 
- 						    document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
 
-
-							$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
-							$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
-							if (cntx == 1 || cntx == '1')  { // Malattie 
-							   document.getElementById('malattieList').style.display = "block";
-							}
-							if (cntx == 2 || cntx == '2')  { // Patologie in atto
-							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-							   document.getElementById('dataAl').disabled = true;  
-							   document.getElementById('malattieList').style.display = "block";
-							}
-							if (cntx == 3 || cntx == '3')  { // Allergie 
-							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-							   document.getElementById('dataAl').disabled = true; 
-							   document.getElementById('allergieList').style.display = "block";
-							}
-							if (cntx == 4 || cntx == '4')  { // Trattamenti non accettati 
-							   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-							   document.getElementById('dataAl').disabled = true; 
-							   document.getElementById('trattamentiList').style.display = "block";
-							}
-						    document.getElementById(edits[cntx]).style.display = "block";
-
-						    break;
-					   case  2:
-						   break;	
-					   case  3: 
-						    break;
-					   default:
-						    break;					   						   				   
-				}		 
-			}
-			var elementoInEditing;  
-			var idx1; //  = idx.substring(2,idx.indexOf('_r'));
-			var idx2; //  = idx.substring(idx.indexOf('_r') + 2);
-			var selectedRow = ""; 
-			// -------------------------------------------
-			var array = [1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8];
-			var count = 0;
-			var totalCells = 4;
-			// -------------------------------------------
-			function selectRow(cella) {
-				if (!cella) return;
-				//alert(cella); 
-				var contesti = new Array(); 
-				contesti['M'] = 1;contesti['P'] = 2;contesti['A'] = 3;contesti['T'] = 4; 
-				var idx = cella.id.substring(0,cella.id.indexOf('_c'));
-				idx1 = idx.substring(2,idx.indexOf('_r'));
-				idx2 = idx.substring(idx.indexOf('_r') + 2);
-				var idLista = ""; 
-				var elemento = getTableItems(idx1, idx2);
-				elementoInEditing = elemento; 
-				var divTipoElementoContent = "";
-				var contesto = "";
-				var cntx = 0; 
-				if (idx1=='M') {
-					cntx = 1;
-					contesto = "Malattie";
-				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 		 
-				} 
-				if (idx1=='P') {
-					cntx = 2;
-				    contesto = "Patologie";
-				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 						
-				} 
-				if (idx1=='A') {
-					cntx = 3;
-					contesto = "Allergie";
-				    divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML;				
-				} 
-				if (idx1=='T') {
-					cntx = 4;
-					contesto = "Trattamenti non accettati";
-					divTipoElementoContent = document.getElementById("trattamentiListDiv").innerHTML;; 
+				var htmlTable = document.getElementById('tblPatologie'); 					
+				htmlTable.outerHTML = tblP;		
+				arrPatologie = fromJSON(window.localStorage.getItem("datiPatologieArr",'P')); 
+				for (var _i=0; _i < arrPatologie.length; _i++)  	{
+					var arrElem = new objItem(); 
+					arrElem.SetPipedData(arrPatologie[_i]); 
+					addTableRowItem('tblPatologie', arrElem.Key, arrElem);
 				}
-				icont = cntx;				
-				document.getElementById(panels[cntx]).style.display = "none"; 
-				document.getElementById(actions[cntx]).style.display = "none"; 
-				document.getElementById(edits[cntx]).innerHTML = editaElemento(elemento); 
- 				document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
+
+				var htmlTable = document.getElementById('tblAllergie'); 					
+				htmlTable.outerHTML = tblA;		
+				arrAllergie = fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
+				for (var _i=0; _i < arrAllergie.length; _i++)  	{
+					var arrElem = new objItem(); 
+					arrElem.SetPipedData(arrAllergie[_i]); 
+					addTableRowItem('tblAllergie', arrElem.Key, arrElem);
+				}
+
+				var htmlTable = document.getElementById('tblTrattamenti'); 					
+				htmlTable.outerHTML = tblT;		
+				arrTrattamenti = fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
+				for (var _i=0; _i < arrTrattamenti.length; _i++)  	{
+					var arrElem = new objItem(); 
+					arrElem.SetPipedData(arrTrattamenti[_i]); 
+					addTableRowItem('tblTrattamenti', arrElem.Key, arrElem);
+				}
+			
+				arrTabelle['M'] = arrMalattie;
+				arrTabelle['P'] = arrPatologie;
+				arrTabelle['A'] = arrAllergie;
+				arrTabelle['T'] = arrTrattamenti;
+			}
+			
+			//var blProvaHost = true; 
+            //var host = "asus:81";
+			//var host = "10.0.0.3:80"; 
+			//var host = "localhost:1464";			
+            var host = "www.atvinformatica.it"; 
+			var availScreenWidth = window.screen.availWidth;
+			var availScreenHeight = window.screen.availHeight;
+			var currScreenWidth = window.screen.width;
+			var currScreenHeight = window.screen.height;
+
+			function fromJSON(sourceValue, tableLetterId) {
+				var arrTarget = new Array(); 
+				if (sourceValue && sourceValue.length>0) {
+					var elementi = sourceValue.split('\$');
+					for (var _s=0; _s<elementi.length; _s++) {
+						arrTarget[arrTarget.length] = elementi[_s];
+					}
+				}
+				return arrTarget; 
+			}
+			function toJSON(sourceArray) {
+				var jsonTarget = "";
+				//if (sourceArray.indexOf('\$')==-1) return sourceArray; 
+				var tmpArray = sourceArray; 
+				for (var i=0; i<tmpArray.length; i++) {
+					if (tmpArray[i].indexOf('undefined') == -1 ) 
+						jsonTarget += tmpArray[i] + '$';   
+				}
+				jsonTarget = jsonTarget.substring(0,jsonTarget.length - 1); 
+				return jsonTarget; 
+			}
+			function inizializzaTabelle() {
+				startAll();
+				arrTabelle['M'] = arrMalattie; 
+				arrTabelle['P'] = arrPatologie; 
+				arrTabelle['A'] = arrAllergie; 
+				arrTabelle['T'] = arrTrattamenti; 
 				
+			}
+			function objItem( dal, al, tipo, descr, key) {
+			    this.Key = key; 
+				this.Dal = dal; 
+				this.Al = al; 
+				this.Tipo = tipo; 
+				this.Descrizione = descr; 
+				this.DisplayValues = this.Key + "\n" + "Dal " + this.Dal + "\n" + "Al " + this.Al + "\n" + "Tipo " + this.Tipo + "\n" + "Descr. " + this.Descrizione; 
+				this.SetDati = function(dal, al, tipo, descr, key) {
+					this.Key = key; 
+					this.Dal = dal; 
+					this.Al= al; 
+					this.Tipo= tipo; 
+					this.Descrizione= descr; 
+					this.DisplayValues = this.Key + "\n" + "Dal " + this.Dal + "\n" + "Al " + this.Al + "\n" + "Tipo " + this.Tipo + "\n" + "Descr. " + this.Descrizione; 
+				}
+				this.SetPipedData = function(pipedData) {
+					if (!pipedData||pipedData==null) return; 
+					var dati = pipedData.split('\|'); 
+					this.Key =dati[4]; 
+					this.Dal = dati[0]; 
+					this.Al= dati[1]; 
+					this.Tipo= dati[2]; 
+					this.Descrizione= dati[3]; 
+					this.DisplayValues = this.Key + "\n" + "Dal " + this.Dal + "\n" + "Al " + this.Al + "\n" + "Tipo " + this.Tipo + "\n" + "Descr. " + this.Descrizione; 
+				}
+				this.GetPipedData = function() {
+					return  this.Dal + "|" + this.Al + "|" + this.Tipo + "|" + this.Descrizione  + "|" + this.Key;  
+				}
+				this.SetKey = function(newKey) {
+					this.Key = newKey; 
+				}
+			}
+			function clickRef(actn, cntx) {
+				icont = cntx; 
+				
+				if (icont==1) divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 
+				if (icont==2) divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 
+				if (icont==3) divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML; 
+				if (icont==4) divTipoElementoContent = document.getElementById("trattamentiListDiv").innerHTML; 
+				
+				document.getElementById(panels[icont]).style.display = "none"; 
+				document.getElementById(actions[icont]).style.display = "none"; 
+				document.getElementById(edits[icont]).innerHTML = editaElemento(); 
+			    document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
+				
+				if (icont==1) document.getElementById('malattieList').style.display = "block";
+				if (icont==2) document.getElementById('malattieList').style.display = "block";
+				if (icont==3) document.getElementById('allergieList').style.display = "block";
+				if (icont==4) document.getElementById('trattamentiList').style.display = "block";
 				
 				$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
 				$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
 
-				$("#dataDal").val(elemento.Dal);
-				$("#dataAl").val(elemento.Al);
+				document.getElementById(edits[icont]).style.display = "block";
+				
+			}
+			var panels = new Array("","divDatiMalattie","divDatiPatologie","divDatiAllergie","divDatiTrattamenti");
+			var actions = new Array("","azioni_malattie","azioni_patologie","azioni_allergie","azioni_trattamenti");
+			var edits = new Array("","divEditaMalattia","divEditaPatologia","divEditaAllergia","divEditaTrattamento");
+			var liste = new Array("", "malattieList", "malattieList", "allergieList", "trattamentiList");
 
-				if (idx1=='M')  { // Malattie 
-					document.getElementById('malattieList').style.display = "block";
+			function selectRow(objRow) {
+				if (!objRow) return;
+				var sKey = objRow.id; 
+				var idx = sKey.substring(2,sKey.indexOf('_c'));
+				var letteraId = idx.substring(0,1); 
+				var posizione = Number(idx.substring(1));
+				var tabellaSource = arrTabelle[letteraId]; 
+				var elemento = new objItem(); 
+				elemento.SetPipedData(tabellaSource[posizione]); 	
+				var divTipoElementoContent = "";
+				var cntx = 0;
+				if (letteraId=='M') {
+					cntx = 1; 
+				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 	
+				} 
+				if (letteraId=='P') {
+				    cntx = 2; 
+				   	divTipoElementoContent = document.getElementById("malattieListDiv").innerHTML; 						
+				} 
+				if (letteraId=='A') {
+					cntx = 3; 
+				    divTipoElementoContent = document.getElementById("allergieListDiv").innerHTML;				
+				} 
+				if (letteraId=='T') {
+					cntx = 4; 
+					divTipoElementoContent = document.getElementById("trattamentiListDiv").innerHTML;; 
 				}
-				if (idx1=='P')  { // Patologie in atto
-				   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-				   document.getElementById('dataAl').disabled = true;  
-				   document.getElementById('malattieList').style.display = "block";
-				}
-				if (idx1=='A')  { // Allergie 
-				   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-				   document.getElementById('dataAl').disabled = true; 
-				   document.getElementById('allergieList').style.display = "block";
-				}
-				if (idx1=='T')  { // Trattamenti non accettati 
-				   document.getElementById('dataAl').value = new Date().toLocaleDateString("it-IT"); 
-				   document.getElementById('dataAl').disabled = true; 
-				   document.getElementById('trattamentiList').style.display = "block";
-				}
+				
+				icont = cntx; 
+				
+				document.getElementById(panels[cntx]).style.display = "none"; 
+				document.getElementById(actions[cntx]).style.display = "none"; 
+				document.getElementById(edits[cntx]).innerHTML = editaElemento(elemento); 
+			    document.getElementById('divTipoElemento').innerHTML = divTipoElementoContent;
+				
+				if (letteraId=='M') document.getElementById('malattieList').style.display = "block";
+				if (letteraId=='P') document.getElementById('malattieList').style.display = "block";
+				if (letteraId=='A') document.getElementById('allergieList').style.display = "block";
+				if (letteraId=='T') document.getElementById('trattamentiList').style.display = "block";
+				
 				var idLista = liste[cntx]; 
 				var objSel = document.getElementById(idLista);
 				var opt;
@@ -439,205 +455,159 @@
 						break;
 					}
 				}
+				$("#dataDal").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+				$("#dataAl").datepicker({changeMonth: true, changeYear: true, maxDate: '+1Y', minDate: '-100Y', yearRange: '-100:+1'});
+
 				document.getElementById(edits[cntx]).style.display = "block";
-	 
-				
 			}
-			function deleteTableItem(tableLetterId, idx) {
-
-				var key = 'td' + tableLetterId + '_r' + idx; 
-				var row = document.getElementById(key);
-				if (!row) return; 
-				row.outerHTML = "";
-				delete row;
-
-				var elemento = ""; 
+			function setDati( modo ) {
+				var	gDal = document.getElementById('dataDal').value; 		
+				var gAl = document.getElementById('dataAl').value;
+				var	objSel = document.getElementById(liste[icont]);				
+				var	gTipo = objSel.options[objSel.selectedIndex].text; 		
+				var	gDesc = document.getElementById('descr').value; 
 				
-				if (tableLetterId == "M") {
-					arrMalattie.splice(idx,1);
-					var dm = document.getElementById("divDatiMalattie");
-					window.localStorage.setItem("datiMalattie", dm.innerHTML);
-					window.localStorage.setItem("datiMalattieArr", toJSON(arrMalattie));
-				}
+				if(gDal) gDal = gDal.replace(/\//g, '.');
+				if(gAl) gAl = gAl.replace(/\//g, '.');
 				
-				if (tableLetterId == "P") {
-					arrPatologie.splice(idx,1);
-					var dp = document.getElementById("divDatiPatologie");
-					window.localStorage.setItem("datiPatologie", dp.innerHTML);
-					window.localStorage.setItem("datiPatologieArr", toJSON(arrPatologie));
-				}
+				document.getElementById(panels[icont]).style.display = "block"; 
+				document.getElementById(actions[icont]).style.display = "block"; 
+				document.getElementById(edits[icont]).style.display = "none";	
+				document.getElementById(edits[icont]).innerHTML = '<div id="' + edits[icont] + '" style="display: none;"></div>'; 		
 				
-				if (tableLetterId == "A") {
-					arrAllergie.splice(idx,1);
-					var da = document.getElementById("divDatiAllergie");
-					window.localStorage.setItem("datiAllergie", da.innerHTML);
-					window.localStorage.setItem("datiAllergieArr", toJSON(arrAllergie));
-				}
-				
-				if (tableLetterId == "T") {
-					arrTrattamenti.splice(idx,1);
-					var dt = document.getElementById("divDatiTrattamenti");
-					window.localStorage.setItem("datiTrattamenti", dt.innerHTML);
-					window.localStorage.setItem("datiTrattamentiArr", toJSON(arrTrattamenti));
-				}
-				
-			}
-			function getTableItems(tableLetterId, idx) {
-				var elemento = ""; 
-				if (tableLetterId == "M") elemento = arrMalattie[idx];
-				if (tableLetterId == "P") elemento = arrPatologie[idx];
-				if (tableLetterId == "A") elemento = arrAllergie[idx];
-				if (tableLetterId == "T") elemento = arrTrattamenti[idx];
-				var dati = elemento.split('\|'); 
-				return new objItem(dati[0], dati[1],dati[2],dati[3]);  
-			}
-			function getSelecter(code, i, j) {
-				return ''; 
-			}
-			function getArrayCount(tableLetterId) {
-				if (tableLetterId == "M") {
-					try { 
-						return arrMalattie.length; 
-					} catch (errore) {
-						return 0;
-					}						
-				}					
-				if (tableLetterId == "P") {
-					try {
-						return arrPatologie.length; 
-					} catch (errore) {
-						return 0;
+				if (modo==0) { // Annulla .....
+					return; 
+				}				
+				if (modo==1) { // Accetta .....
+					if (blModifyItem) {
+						var sKey = lastElemento.Key; 
+						lastElemento.SetDati(gDal,gAl,gTipo, gDesc, sKey);
+						var idx = lastElemento.Key;
+						var letteraId = idx.substring(0,1); 
+						var posizione = Number(idx.substring(1));
+						var tabellaSource = arrTabelle[letteraId]; 
+						var modItem = lastElemento.GetPipedData(); 
+						tabellaSource[posizione] = modItem; 
+						
+						var htmlTable = document.getElementById('tbl' + contestiL[icont]); 
+						if (htmlTable) {
+							if (icont==1) {
+								// Cancella la tabella HTML
+								htmlTable.outerHTML = tblM;
+								// Ridisegna la tabella HTML
+								for (var _i=0; _i < tabellaSource.length; _i++)  	{
+									var arrElem = new objItem(); 
+									arrElem.SetPipedData(tabellaSource[_i]); 
+									addTableRowItem('tblMalattie', arrElem.Key, arrElem);
+								}
+							}								
+							if (icont==2) {
+								htmlTable.outerHTML = tblP;
+								for (var _i=0; _i < tabellaSource.length; _i++)  	{
+									var arrElem = new objItem(); 
+									arrElem.SetPipedData(tabellaSource[_i]); 
+									addTableRowItem('tblPatologie', arrElem.Key, arrElem);
+								}
+							}								
+							if (icont==3) { 
+								htmlTable.outerHTML = tblA;  
+								for (var _i=0; _i < tabellaSource.length; _i++)  	{
+									var arrElem = new objItem(); 
+									arrElem.SetPipedData(tabellaSource[_i]); 
+									addTableRowItem('tblAllergie', arrElem.Key, arrElem);
+								}
+							}
+							if (icont==4) { 
+								htmlTable.outerHTML = tblT;
+								for (var _i=0; _i < tabellaSource.length; _i++)  	{
+									var arrElem = new objItem(); 
+									arrElem.SetPipedData(tabellaSource[_i]); 
+									addTableRowItem('tblTrattamenti', arrElem.Key, arrElem);
+								}
+							}	
+							saveInLocalStorage(icont);							
+						}						
+					} else {
+						var elemento = new objItem(); 
+						elemento.SetDati(gDal,gAl,gTipo, gDesc);
+						addElemento(icont, elemento);
+					}		
+					return; 
+				}				
+				if (modo==9) { // Elimina .....
+					var sKey = lastElemento.Key; 
+					lastElemento.SetDati(gDal,gAl,gTipo, gDesc, sKey);
+					var idx = lastElemento.Key;
+					var letteraId = idx.substring(0,1); 
+					var posizione = Number(idx.substring(1));
+					var tabellaSource = arrTabelle[letteraId]; 
+					tabellaSource.splice(posizione,1);
+					var htmlTable = document.getElementById('tbl' + contestiL[icont]); 
+					if (htmlTable) {
+						if (icont==1) {
+							htmlTable.outerHTML = tblM;
+							for (var _i=0; _i < tabellaSource.length; _i++)  	{
+								var arrElem = new objItem(); 
+								arrElem.SetPipedData(tabellaSource[_i]); 
+								arrElem.SetKey("M" + _i); 
+								addTableRowItem('tblMalattie', arrElem.Key, arrElem);
+								tabellaSource[_i] = arrElem.GetPipedData(); 
+							}
+							arrTabelle[letteraId] = tabellaSource; 
+						}								
+						if (icont==2) {
+							htmlTable.outerHTML = tblP;
+							for (var _i=0; _i < tabellaSource.length; _i++)  	{
+								var arrElem = new objItem(); 
+								arrElem.SetPipedData(tabellaSource[_i]); 
+								arrElem.SetKey("P" + _i); 
+								addTableRowItem('tblPatologie', arrElem.Key, arrElem);
+								tabellaSource[_i] = arrElem.GetPipedData(); 
+							}
+							arrTabelle[letteraId] = tabellaSource; 
+						}								
+						if (icont==3) { 
+							htmlTable.outerHTML = tblA;  
+							for (var _i=0; _i < tabellaSource.length; _i++)  	{
+								var arrElem = new objItem(); 
+								arrElem.SetPipedData(tabellaSource[_i]); 
+								arrElem.SetKey("A" + _i); 
+								addTableRowItem('tblAllergie', arrElem.Key, arrElem);
+								tabellaSource[_i] = arrElem.GetPipedData();
+							}
+							arrTabelle[letteraId] = tabellaSource; 
+						}
+						if (icont==4) { 
+							htmlTable.outerHTML = tblT;
+							for (var _i=0; _i < tabellaSource.length; _i++)  	{
+								var arrElem = new objItem(); 
+								arrElem.SetPipedData(tabellaSource[_i]); 
+								arrElem.SetKey("T" + _i); 
+								addTableRowItem('tblTrattamenti', arrElem.Key, arrElem);
+								tabellaSource[_i] = arrElem.GetPipedData();
+							}
+							arrTabelle[letteraId] = tabellaSource; 
+						}
+						saveInLocalStorage(icont);
 					}	
-				} 
-				if (tableLetterId == "A") {
-					try { 
-						return arrAllergie.length; 
-					} catch (errore) {
-						return 0;
-					}	
 				}
-				if (tableLetterId == "T") {
-					try { 
-						return arrTrattamenti.length; 
-					} catch (errore) {
-						return 0;
-					}	
-				} 
-			}
-			function fromJSON(sourceValue, tableLetterId) {
-				if (!sourceValue) return;
-				var jsonTarget = ""; 
-				if (sourceValue.lastIndexOf('undefined$')>-1) 		
-					jsonTarget = sourceValue.substring(sourceValue.lastIndexOf('undefined$') + 10);
-				else 	
-					jsonTarget = sourceValue; 
-
-				var newArray = new Array(); 
-				var jsonArray = jsonTarget.split('\$'); 
-				for (var i=0; i<jsonArray.length; i++) {
-					jsonElement = jsonArray[i];
-					
-					if (jsonElement=="") break; 
-					
-					var jsonFields = jsonElement.split('\|')
-					jsonElement.Dal = jsonFields[0]; 
-					jsonElement.Al = jsonFields[1];
-					jsonElement.Tipo = jsonFields[2];
-					jsonElement.Descrizione = jsonFields[3];   
-					newArray[newArray.length] = jsonElement; 	
-				}
-				if (newArray.length>0) {
-					if (tableLetterId == "M") arrMalattie = newArray;  
-					if (tableLetterId == "P") arrPatologie = newArray;  
-					if (tableLetterId == "A") arrAllergie = newArray;  
-					if (tableLetterId == "T") arrTrattamenti = newArray;  
-				} else {
-					if (tableLetterId == "M") arrMalattie = new Array();  
-					if (tableLetterId == "P") arrPatologie = new Array();  
-					if (tableLetterId == "A") arrAllergie = new Array();  
-					if (tableLetterId == "T") arrTrattamenti = new Array();  
-				}
-				if (tableLetterId == "M") return arrMalattie;  
-				if (tableLetterId == "P") return arrPatologie;  
-				if (tableLetterId == "A") return arrAllergie;  
-				if (tableLetterId == "T") return arrTrattamenti; 
-			}
-			function toJSON(sourceArray) {
-				var jsonTarget = "";
-				for (var i=0; i<sourceArray.length; i++) {
-					jsonElement = new objItem(); 
-					jsonElement = sourceArray[i];
-					jsonTarget += jsonElement.Dal + '|' + jsonElement.Al + '|' + jsonElement.Tipo + '|' + jsonElement.Descrizione + '$';   
-				}
-				return jsonTarget; 
-			}
-			function addArrayItem(tableLetterId, arrItem) {
-
-				if (tableLetterId == "M") {
-					if (!arrMalattie) arrMalattie = new Array(); 
-					arrMalattie[getArrayCount(tableLetterId)] = arrItem; 
-					var dm = document.getElementById("divDatiMalattie");
-					window.localStorage.setItem("datiMalattie", dm.innerHTML);
-					window.localStorage.setItem("datiMalattieArr", toJSON(arrMalattie));
-					arrMalattie = fromJSON(window.localStorage.getItem("datiMalattieArr"),'M'); 
-				}
-				if (tableLetterId == "P") {
-					if (!arrPatologie) arrPatologie = new Array(); 
-					arrPatologie[getArrayCount(tableLetterId)] = arrItem; 
-					var dp = document.getElementById("divDatiPatologie");
-					window.localStorage.setItem("datiPatologie", dp.innerHTML);
-					window.localStorage.setItem("datiPatologieArr", toJSON(arrPatologie));
-					arrPatologie = fromJSON(window.localStorage.getItem("datiPatologieArr"),'P'); 
-				}
-				if (tableLetterId == "A") {
-					if (!arrAllergie) arrAllergie = new Array(); 
-					arrAllergie[getArrayCount(tableLetterId)] = arrItem;  
-					var da = document.getElementById("divDatiAllergie");
-					window.localStorage.setItem("datiAllergie", da.innerHTML);
-					window.localStorage.setItem("datiAllergieArr", toJSON(arrAllergie));
-					arrAllergie = fromJSON(window.localStorage.getItem("datiAllergieArr"),'A'); 
-				}
-				if (tableLetterId == "T") {
-					if (!arrTrattamenti) arrTrattamenti = new Array(); 
-					arrTrattamenti[getArrayCount(tableLetterId)] = arrItem;  
-					var dt = document.getElementById("divDatiTrattamenti");
-					window.localStorage.setItem("datiTrattamenti", dt.innerHTML);
-					window.localStorage.setItem("datiTrattamentiArr", toJSON(arrTrattamenti));
-					arrTrattamenti = fromJSON(window.localStorage.getItem("datiTrattamentiArr"),'T'); 
-				}
-			}
-
-			function writeTable(tableLetterId, elemento) {
-				var tbody = $('#body' + tableLetterId);
-				var i = getArrayCount(tableLetterId); 
-				var tr = $('<tr id=\"td' + tableLetterId + '_r' + i + '\"/>').appendTo(tbody);
- 				// append <td> elements to previously created <tr> element:
-				var key = 'td' + tableLetterId + '_r' + i + '_c' + 1; 
-				var cp = '<input type=\"button\" id=\"' + key + '\" value=\"°\" onclick=\"selectRow(this);\" />'
-				tr.append('<td align=\"center\">' + cp + '</td>');
-				key = 'td' + tableLetterId + '_r' + i + '_c' + 2; 
-   			    tr.append('<td ' + key + '>' + elemento.Dal + '</td>');
-				key = 'td' + tableLetterId + '_r' + i + '_c' + 3; 
-   			    tr.append('<td ' + key + '>' + elemento.Al + '</td>');
-				key = 'td' + tableLetterId + '_r' + i + '_c' + 4; 
-   			    tr.append('<td ' + key + '>' + elemento.Tipo + '</td>');
-				addArrayItem(tableLetterId, elemento);
-				return;
-			}	
-			function getTableRowValues(tableLetterId) {
-				var tbody = $('#body' + tableLetterId);
-				var i = getArrayCount(tableLetterId) + 1; 
 			}
 			function editaElemento(elemento) {
 				var elemento_body = "";
 				if (!elemento) {
+					// ---------------------------------------------------------
+									blModifyItem = false;		
+									lastElemento = null; 			
+					// ---------------------------------------------------------
+
 					elemento_body = "<table width='300' style='display: block;'><tr><td>Dal</td><td><input type='text' id='dataDal'/></td></tr><tr><td>Al</td><td >" +
 					                "<input type='text' id='dataAl'/></td></tr><tr><td>Tipo</td><td id='tipo'>" + 
 									"<div id='divTipoElemento' style='display: block;'></div>" + 
 									"</td></tr><tr><td>Descr.</td><td><input type='text' id='descr'/></td></tr><tr><td></td><td><input type='button' value='Accetta' onclick='setDati(1);'/>&nbsp;&nbsp;&nbsp;<input type='button' value='Annulla' onclick='setDati(0);'/></td></tr></table>"; 
 				} else {
 					// ---------------------------------------------------------
-									blModifyItem = true;				
+									blModifyItem = true;		
+									lastElemento = elemento; 			
 					// ---------------------------------------------------------
 					elemento_body = "<table width='300' style='display: block;'><tr><td>Dal</td><td><input type='text' id='dataDal' value='"+ elemento.Dal  +"'/></td></tr><tr><td>Al</td><td >" +
 					                "<input type='text' id='dataAl' value='"+ elemento.Al  +"'/></td></tr><tr><td>Tipo</td><td id='tipo'>" + 
@@ -647,111 +617,79 @@
 									"<input type='button' value='Annulla' onclick='setDati(0);'/>&nbsp;&nbsp;&nbsp;<input type='button' value='Elimina' onclick='setDati(9);'/></td></tr></table>"; 				
 				}
 				return elemento_body;
-			}	
-			function setDati(action) {
-			    if (icont == 0) return;	
-				var lettere = new Array("","M", "P", "A", "T"); 
-				var gDal = ""; 	
-				var gAl = ""; 
-				var objSel = ""; 				
-				var gTipo = ""; 		
-				var gDesc = ""; 
-				if (action && action == 1) {
-					gDal = document.getElementById('dataDal').value; 		
-					gAl = document.getElementById('dataAl').value;
-					objSel = document.getElementById(liste[icont]);				
-					gTipo = objSel.options[objSel.selectedIndex].text; 		
-					gDesc = document.getElementById('descr').value; 	
-					// aggiungi i dati nella lista ....
-					var elemento = new objItem(); 
-					elemento.SetDati(gDal,gAl,gTipo, gDesc);
-					if (blModifyItem) { 
-						deleteTableItem(idx1, idx2); 
-						blModifyItem = false;
-					}						
-					writeTable(lettere[icont], elemento);		
-				} else if (action && action == 9) {
-				   
-				   // elimina i dati dalla lista ....
-				   deleteTableItem(idx1, idx2); 
-				   
-				} else if (action && action == 3) {
-					// modifica i dati nella lista ....
-     				gDal = "";  		
-					gAl = ""; 
-					objSel = ""; 			
-					gTipo = ""; 		
-					gDesc = ""; 	
-				}
-				document.getElementById(panels[icont]).style.display = "block"; 
-				document.getElementById(actions[icont]).style.display = "block"; 
-				document.getElementById(edits[icont]).style.display = "none";	
-				document.getElementById(edits[icont]).innerHTML = '<div id="' + edits[icont] + '" style="display: none;"></div>'; 				
 			}
-			function ImportaDatiPaziente() {
-                var codicePaziente = document.getElementById("codPaziente").value;
-                $.ajax({
-                    dataType: 'jsonp',
-                    jsonpCallback: 'jsonp_callbackBT',
-                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Import',
-                }); 
-			}
-			function jsonp_callbackBT(res) {
-                var dati = res.split("||");
-
-				arrMalattie = new Array();  
-				arrPatologie = new Array();  
-				arrAllergie = new Array();  
-				arrTrattamenti = new Array();  
+			function addTableRowItem(tableId, sKey, elemento) {
+				var table = document.getElementById(tableId);
+				var nextRow = document.getElementById(tableId).rows.length;
+				if (!sKey) return;
+				var row = table.insertRow(nextRow);
+				row.id = 'tr' +sKey;
 				
-				var tmpMalattie = dati[0]; 
-				var tmpPatologie = dati[1];  
-				var tmpAllergie = dati[2]; 
-				var tmpTrattamenti = dati[3]; 
+				var cell1 = row.insertCell(0);
+				var key = 'td' + sKey + '_c' + 1; 
+				var cp = '<input type=\"button\" id=\"' + key + '\" value=\"°\" onclick=\"selectRow(this);\" />'
+				cell1.innerHTML =  cp;
+				cell1.style.align = "center"; 
 				
-				resetTableFromArray('M', tmpMalattie); 
-				resetTableFromArray('P', tmpPatologie); 
-				resetTableFromArray('A', tmpAllergie); 
-				resetTableFromArray('T', tmpTrattamenti); 
-			}
-			function EsportaDatiPaziente() {
-                var codicePaziente = document.getElementById("codPaziente").value;
-                $.ajax({
-                    dataType: 'jsonp',
-                    jsonpCallback: 'jsonp_callbackBT',
-                    url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Export&blobTable='+ 
-																								window.localStorage.getItem("datiMalattieArr") + '||' +
-																								window.localStorage.getItem("datiPatologieArr") + '||' +
-																								window.localStorage.getItem("datiAllergieArr") + '||' +
-																								window.localStorage.getItem("datiTrattamentiArr"),
-                }); 
-			}
-			function resetTableFromArray(tableLetterId, arraySource) {
-				var tabelle = new Array(); 
-				tabelle['M'] = 'tblMalattie'; 
-				tabelle['P'] = 'tblPatologie'; 
-				tabelle['A'] = 'tblAllergie'; 
-				tabelle['T'] = 'tblTrattamenti'; 
-				var bodyitems = new Array(); 
-				bodyitems['M'] = "<table id=\"tblMalattie\" width=\"300\" border=\"1\"><tbody id=\"bodyM\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
-                bodyitems['P'] = "<table id=\"tblPatologie\" width=\"300\" border=\"1\"><tbody id=\"bodyP\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
-                bodyitems['A'] = "<table id=\"tblAllergie\" width=\"300\" border=\"1\"><tbody id=\"bodyA\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
-                bodyitems['T'] = "<table id=\"tblTrattamenti\" width=\"300\" border=\"1\"><tbody id=\"bodyT\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
+				var cell2 = row.insertCell(1);
+				key = 'td'  + sKey + '_c' + 2; 
+				cell2.innerHTML =  elemento.Dal;
 
-				var tb = $("#" + tabelle[tableLetterId] + " > tbody").html(bodyitems[tableLetterId]);
-				var sourceElement = arraySource.split('\$'); 
-				for (var i=0; i<sourceElement.length; i++) { 
-					var arrElem = sourceElement[i];
-					if (!arrElem || arrElem.length == 0 || arrElem == null || arrElem == 'null')
-						break; 
-					var dati = arrElem.split('\|'); 
-					var elemento = new objItem(dati[0], dati[1],dati[2],dati[3]); 
-					writeTable(tableLetterId, elemento); 
-				}
+				var cell3 = row.insertCell(2);
+				key = 'td'  + sKey +  '_c' + 3; 
+				cell3.innerHTML =  elemento.Al;
+
+				var cell4 = row.insertCell(3);
+				key = 'td'  + sKey +  '_c' + 4; 
+				cell4.innerHTML = elemento.Tipo;
 			}
+			
+			function addElemento(cntx, elemento) {
+				var nItems = 0; 
+				var sKey = ""; 
+				var tbody = $('#body' + contesti[cntx]);
+				switch (cntx) {
+					case 1: 
+						nItems = arrMalattie.length; 
+						sKey = 'M' + nItems; 
+						elemento.Key = sKey; 
+						arrMalattie[arrMalattie.length] = elemento.Dal + "|" + elemento.Al + "|" + elemento.Tipo  + "|" + elemento.Descrizione + "|"+ elemento.Key; 
+						addTableRowItem('tblMalattie', sKey, elemento); 
+						arrTabelle['M'] = arrMalattie; 
+						break;
+						
+					case 2: 
+						nItems = arrPatologie.length; 
+						sKey = 'P' + nItems; 
+						elemento.Key = sKey; 
+						arrPatologie[arrPatologie.length] =  elemento.Dal + "|" + elemento.Al + "|" + elemento.Tipo + "|" + elemento.Descrizione + "|"+ elemento.Key; 
+						addTableRowItem('tblPatologie', sKey, elemento);
+						arrTabelle['P'] = arrPatologie; 
+						
+						break;
+					case 3: 
+						nItems = arrAllergie.length; 
+						sKey = 'A' + nItems; 
+						elemento.Key = sKey; 
+						arrAllergie[arrAllergie.length] =  elemento.Dal + "|" + elemento.Al + "|" + elemento.Tipo + "|" + elemento.Descrizione + "|"+ elemento.Key; 
+						addTableRowItem('tblAllergie', sKey, elemento); 
+						arrTabelle['A'] = arrAllergie; 
+						break;
+					case 4: 
+						nItems = arrTrattamenti.length; 
+						sKey = 'T' + nItems; 
+						elemento.Key = sKey; 
+						arrTrattamenti[arrTrattamenti.length] =  elemento.Dal + "|" + elemento.Al + "|" + elemento.Tipo + "|" + elemento.Descrizione + "|"+ elemento.Key; 
+						addTableRowItem('tblTrattamenti', sKey, elemento); 
+						arrTabelle['T'] = arrTrattamenti; 
+						break;
+				}
+				saveInLocalStorage(cntx); 
+			}
+			
 		</script>
 	</head>
-	<body>
+	<body  onload="inizializzaTabelle();">
 		<div id="page">
 			<div class="header Fixed">
 				<a href="#menu"></a>
@@ -779,7 +717,7 @@
 												<td><input type="text" id="codPaziente" value=""/></td>
 											</tr>
 											<tr>
-											  <td><input type="button" value="Ricarica" onclick="getDatiPaziente();"/></td>
+											  <td><input type="button" value="Ricarica" onclick="getDatiPaziente();"/><input type="button" value="Reset Dati" onclick="resetDatiPaziente();"/></td>
 											</tr>
 										</table>
 									</td>
@@ -791,21 +729,27 @@
 				</div>
 				<div id="second" class="menuItemInfo">
 					<p><strong>Malattie</strong><br /></p>
-                            <div id="divDatiMalattie"></div>
+                            <div id="divDatiMalattie">
+								<table id="tblMalattie" width="300" border="1"><tbody id="bodyM"><tr><th><img id="chk" src="img/checkedclipboard.png" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>
+							</div>
 							<div id="azioni_malattie"><table style="border-spacing: 20px;"><tr><td><img id="add" src="img/document_add.png" onclick="clickRef(1, 1);"/></td><td></td><td></td></tr></table></div>
 							<div id="divEditaMalattia" style="display: none;"></div>
 							<p><a href="#menu">Ritorna al menu.</a></p>
 				</div>
 				<div id="third" class="menuItemInfo">
 					<p><strong>Patologie in atto</strong><br />
-                            <div id="divDatiPatologie"></div>
+                            <div id="divDatiPatologie">
+								<table id="tblPatologie" width="300" border="1"><tbody id="bodyP"><tr><th><img id="chk" src="img/checkedclipboard.png" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>
+							</div>
 							<div id="azioni_patologie"><table style="border-spacing: 20px;"><tr><td><img id="add" src="img/document_add.png" onclick="clickRef(1, 2);"/></td><td></td><td></td></tr></table></div>
 							<div id="divEditaPatologia" style="display: none;"></div>
 					<a href="#menu">Ritorna al menu.</a></p>
 				</div>
 				<div id="fourth" class="menuItemInfo">
 					<p><strong>Allergie</strong><br />
-                            <div id="divDatiAllergie"></div>
+                            <div id="divDatiAllergie">
+								<table id="tblAllergie" width="300" border="1"><tbody id="bodyA"><tr><th><img id="chk" src="img/checkedclipboard.png" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>
+							</div>
 							<div id="azioni_allergie"><table style="border-spacing: 20px;"><tr><td><img id="add" src="img/document_add.png" onclick="clickRef(1, 3);"/></td><td></td><td></td></tr></table></div>
 							<div id="divEditaAllergia" style="display: none;"></div>
 					<a href="#menu">Ritorna al menu.</a></p>
@@ -813,7 +757,8 @@
 				<div id="fifth" class="menuItemInfo">
 					<p><strong>Trattamenti non accettati</strong><br />
                             <div id="divDatiTrattamenti">
-                            </div>
+								<table id="tblTrattamenti" width="300" border="1"><tbody id="bodyT"><tr><th><img id="chk" src="img/checkedclipboard.png" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>
+							</div>
 							<div id="azioni_trattamenti"><table style="border-spacing: 20px;"><tr><td><img id="add" src="img/document_add.png" onclick="clickRef(1, 4);"/></td><td></td><td></td></tr></table></div>
 							<div id="divEditaTrattamento" style="display: none;"></div>
 					<a href="#menu">Ritorna al menu.</a></p>
