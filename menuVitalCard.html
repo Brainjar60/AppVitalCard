@@ -71,7 +71,7 @@
             var tblT = "<table id=\"tblTrattamenti\" width=\"300\" border=\"1\"><tbody id=\"bodyT\"><tr><th><img id=\"chk\" src=\"img/checkedclipboard.png\" /></th><th>Dal</th><th>Al</th><th>Descrizione</th></tr></tbody></table>";
 
 			function startAll() {
-				
+				myAlert("");
 				arrMalattie = new Array(); 
 				arrPatologie = new Array(); 
 				arrAllergie = new Array(); 
@@ -118,6 +118,7 @@
 				var closer = null;
 
 				$menu.find( 'a' ).on( 'click', function() {
+					myAlert("");
 					closer = $(this).attr( "href" );
 				});
 
@@ -133,6 +134,7 @@
 				});
             }
 			function EsportaDatiPaziente() {
+				//myAlert("Dati salvati correttamente.");
                 var codicePaziente = document.getElementById("codPaziente").value;
 				var s1 = window.localStorage.getItem("datiMalattieArr");
 				var s2 = window.localStorage.getItem("datiPatologieArr");
@@ -150,12 +152,16 @@
                 }); 
             }
 			function ImportaDatiPaziente() {
+				////myAlert("Dati salvati correttamente.");
                 var codicePaziente = document.getElementById("codPaziente").value;
                 $.ajax({
                     dataType: 'jsonp',
                     jsonpCallback: 'jsonp_callbackBT',
                     url: 'http://' + host + '/ImportExportHandler.ashx?callback=?&codicePaziente='+ codicePaziente + '&azione=Import',
                 }); 
+			}
+			function myAlert(msg) {
+				document.getElementById("tdDatiIE").innerText = msg; 
 			}
 			function jsonp_callbackBT(res) {
                 var dati = res.split("<§>");
@@ -170,12 +176,14 @@
 				if (dati[2]) arrAllergie    = dati[2].split('\$'); 
 				if (dati[3]) arrTrattamenti = dati[3].split('\$'); 
 				
-				localStorage.setItem("datiMalattieArr", dati[0]);
-				localStorage.setItem("datiPatologieArr", dati[1]);
-				localStorage.setItem("datiAllergieArr", dati[2]);
-				localStorage.setItem("datiTrattamentiArr", dati[3]);
+				if (dati[0]) localStorage.setItem("datiMalattieArr", dati[0]);
+				if (dati[1]) localStorage.setItem("datiPatologieArr", dati[1]);
+				if (dati[3]) localStorage.setItem("datiAllergieArr", dati[2]);
+				if (dati[3]) localStorage.setItem("datiTrattamentiArr", dati[3]);
 
 				getInitializedData();
+				// document.getElementById("Dati OK!!").innerText = msg; 
+
 
 			}			
             function getDatiPaziente() {
@@ -308,8 +316,8 @@
 			//var blProvaHost = true; 
             //var host = "asus:81";
 			//var host = "10.0.0.3:80"; 
-			//var host = "localhost:1464";			
-            var host = "www.atvinformatica.it"; 
+			var host = "localhost:1464";			
+            // var host = "www.atvinformatica.it"; 
 			var availScreenWidth = window.screen.availWidth;
 			var availScreenHeight = window.screen.availHeight;
 			var currScreenWidth = window.screen.width;
@@ -779,7 +787,7 @@
 									  <td>&nbsp;&nbsp;&nbsp;</td>
 									  <td>&nbsp;&nbsp;&nbsp;</td>								  
 									  <td>&nbsp;&nbsp;&nbsp;</td>
-									  <td>&nbsp;&nbsp;&nbsp;</td>								  
+									  <td id="tdDatiIE">&nbsp;&nbsp;&nbsp;</td>								  
 									  <td>&nbsp;&nbsp;&nbsp;</td>
 									  <td>&nbsp;&nbsp;&nbsp;</td>								  
 									  <td>&nbsp;&nbsp;&nbsp;</td>
